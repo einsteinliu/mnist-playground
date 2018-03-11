@@ -45,12 +45,14 @@ def lenet_with_scope(features,labels,mode):
                 conv21 = tf.contrib.layers.conv2d(pool2,num_outputs=64)
                 deconv21 = tf.contrib.layers.conv2d_transpose(conv21,num_outputs=32)
                 conv22 = tf.contrib.layers.conv2d(deconv21,num_outputs=32)
-                reconstruct_logits = tf.contrib.layers.conv2d_transpose(conv22,num_outputs=1)                
+                reconstruct_logits = tf.contrib.layers.conv2d_transpose(conv22,num_outputs=1,activation_fn=None)                
                 
-                reconstruct_probs = tf.nn.softmax(reconstruct_logits,name = "softmax")
-
-                tf.summary.image("Diff",reconstruct_probs-groundtruth)      
+                reconstruct_probs = tf.nn.sigmoid(reconstruct_logits,name = "softmax")
+                reconstruct_result = tf.cast(tf.greater(reconstruct_probs,0.5),dtype=tf.float32)
                 
+                #shape_tmp = reconstruct_result.get_shape()
+                #tf.summary.image("Diff",reconstruct_result-groundtruth)      
+                tf.summary.image("result",reconstruct_result)      
                 reconstruction = {
                     "probabilities":reconstruct_probs
                     }
@@ -88,7 +90,7 @@ def main(args):
 
     estimator = tf.estimator.Estimator(
         model_fn = lenet_with_scope,        
-        model_dir = "D:/ckp")
+        model_dir = "D:/Study/DeepLearning/MNIST_Playground/mnist-playground/ckp")
 
     tensors_to_log = {"probabilities": "softmax"}
     logging_hook = tf.train.LoggingTensorHook(
