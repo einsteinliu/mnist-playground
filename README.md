@@ -1,7 +1,7 @@
 # mnist-playground
 tensorflow playground based on mnist
 
-##mnist_de_encoder.py
+## mnist_de_encoder.py
 Input:  mnist image
 
 Output: pattern image of corresponding digit
