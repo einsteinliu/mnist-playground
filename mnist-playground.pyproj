@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="mnist_contrib_layers.py" />
     <Compile Include="mnist_de_encoder.py" />
+    <Compile Include="mnist_de_encoder_daveyd.py" />
     <Compile Include="mnist_lstm.py" />
     <Compile Include="mnist_playground.py" />
     <Compile Include="mnist_softmax.py" />

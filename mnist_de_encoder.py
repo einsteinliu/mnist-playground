@@ -20,18 +20,20 @@ def lenet_with_scope(features,labels,mode):
     arg_scope_conv2d = tf.contrib.framework.arg_scope([layers.conv2d],
                                         kernel_size=[5,5],
                                         weights_initializer=tf.initializers.truncated_normal(stddev=0.1),                                        
-                                        activation_fn = tf.nn.relu,
-                                        biases_initializer=tf.initializers.constant(0.1))
+                                        activation_fn = tf.nn.leaky_relu,
+                                        biases_initializer=tf.initializers.constant(0.1),
+                                        normalizer_fn=layers.batch_norm)
 
     arg_scope_deconv2d = tf.contrib.framework.arg_scope([layers.conv2d_transpose],
                                         kernel_size=[2,2],
                                         stride = 2,
                                         weights_initializer=tf.initializers.truncated_normal(stddev=0.1),                                        
-                                        activation_fn = tf.nn.relu,
-                                        biases_initializer=tf.initializers.constant(0.1))
+                                        activation_fn = tf.nn.leaky_relu,
+                                        biases_initializer=tf.initializers.constant(0.1),
+                                        normalizer_fn=layers.batch_norm)
 
     arg_scope_full_connected = tf.contrib.framework.arg_scope([layers.fully_connected],
-                                                              activation_fn=tf.nn.relu,
+                                                              activation_fn=tf.nn.leaky_relu,
                                                               biases_initializer = tf.initializers.constant(0.1))
     
     with arg_scope_conv2d:
@@ -51,8 +53,9 @@ def lenet_with_scope(features,labels,mode):
                 reconstruct_result = tf.cast(tf.greater(reconstruct_probs,0.5),dtype=tf.float32)
                 
                 #shape_tmp = reconstruct_result.get_shape()
-                #tf.summary.image("Diff",reconstruct_result-groundtruth)      
-                tf.summary.image("result",reconstruct_result)      
+                tf.summary.image("Diff",reconstruct_result-groundtruth)      
+                tf.summary.image("result",reconstruct_probs)      
+                tf.summary.image("origin",groundtruth)
                 reconstruction = {
                     "probabilities":reconstruct_probs
                     }
@@ -60,7 +63,7 @@ def lenet_with_scope(features,labels,mode):
                 if mode == tf.estimator.ModeKeys.PREDICT:
                     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
                 
-                loss = tf.losses.absolute_difference(labels=groundtruth,predictions=reconstruct_probs)
+                loss = tf.losses.absolute_difference(labels=input_layer,predictions=reconstruct_probs)
 
                 if mode == tf.estimator.ModeKeys.TRAIN:
                     optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.01)
@@ -89,7 +92,7 @@ def main(args):
     train_image_labels = np.asarray(train_image_labels)    
 
     estimator = tf.estimator.Estimator(
-        model_fn = lenet_with_scope,        
+        model_fn = lenet_with_scope,
         model_dir = "D:/Study/DeepLearning/MNIST_Playground/mnist-playground/ckp")
 
     tensors_to_log = {"probabilities": "softmax"}
