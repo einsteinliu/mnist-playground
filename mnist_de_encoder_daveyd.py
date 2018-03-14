@@ -6,6 +6,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import cv2
 import tensorflow.contrib.layers as layers
 from tensorflow.examples.tutorials.mnist import input_data
 from tensorflow.contrib import framework
@@ -20,7 +21,7 @@ def lenet_with_scope(features,labels,mode):
     arg_scope_conv2d = tf.contrib.framework.arg_scope([layers.conv2d],
                                         kernel_size=[5,5],
                                         activation_fn = tf.nn.leaky_relu,
-					normalizer_fn=layers.batch_norm)
+					                    normalizer_fn=layers.batch_norm)
     arg_scope_deconv2d = tf.contrib.framework.arg_scope([layers.conv2d_transpose],
                                         kernel_size=[2,2],
                                         stride = 2,
@@ -75,9 +76,31 @@ def lenet_with_scope(features,labels,mode):
                 return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=training_op)
 
 def main(args):
+    nums = []
+    for i in range(10):
+        img = np.zeros([28,28])        
+        cv2.putText(img,str(i),(5,25),cv2.FONT_HERSHEY_SIMPLEX,1,1,2,cv2.LINE_AA)
+        nums.append(np.float32(img.flatten()))
+
     mnist = input_data.read_data_sets('MNIST_data')
     train_image = mnist.train.images    
     train_labels = np.array(mnist.train.labels,dtype=np.int32)
+
+    ##extract 10 pattern image
+    #pattern_image = []
+    #for i in range(0,10):
+    #    j = 0
+    #    while(train_labels[j]!=i):
+    #        j = j + 1
+    #    pattern_image.append(train_image[j])    
+    
+    train_image_labels = []
+    #construct ground truth
+    for i in range(0,train_labels.shape[0]):
+        train_image_labels.append(nums[train_labels[i]])
+
+    train_image_labels = np.asarray(train_image_labels)    
+    #shp = np.shape(train_image_labels)
 
     estimator = tf.estimator.Estimator(
         model_fn = lenet_with_scope,        
@@ -89,7 +112,7 @@ def main(args):
     
     train_func = tf.estimator.inputs.numpy_input_fn(
         x = {"x":train_image},
-        y = train_image,
+        y = train_image_labels,
         batch_size = 50,
         num_epochs=None,
         shuffle=True)

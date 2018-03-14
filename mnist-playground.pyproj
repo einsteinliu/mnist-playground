@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>2c139ea1-8cfc-4a23-aa89-251f155ce776</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>mnist_de_encoder.py</StartupFile>
+    <StartupFile>mnist_de_encoder_daveyd.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

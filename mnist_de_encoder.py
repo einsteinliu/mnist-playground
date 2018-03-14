@@ -44,7 +44,13 @@ def lenet_with_scope(features,labels,mode):
                 conv2 = tf.contrib.layers.conv2d(pool1,num_outputs=64)
                 pool2 = tf.contrib.layers.max_pool2d(conv2,kernel_size=[2,2],stride=2)
 
-                conv21 = tf.contrib.layers.conv2d(pool2,num_outputs=64)
+                shp = pool2.get_shape()
+                flat1 = tf.contrib.layers.flatten(pool2)
+                fc1 = tf.contrib.layers.fully_connected(flat1,num_outputs=128)
+                fc2 = tf.contrib.layers.fully_connected(fc1,num_outputs=7*7*64)
+                deflat2 = tf.reshape(fc2,[-1,7,7,64])
+
+                conv21 = tf.contrib.layers.conv2d(deflat2,num_outputs=64)
                 deconv21 = tf.contrib.layers.conv2d_transpose(conv21,num_outputs=32)
                 conv22 = tf.contrib.layers.conv2d(deconv21,num_outputs=32)
                 reconstruct_logits = tf.contrib.layers.conv2d_transpose(conv22,num_outputs=1,activation_fn=None)                
@@ -83,9 +89,9 @@ def main(args):
         j = 0
         while(train_labels[j]!=i):
             j = j + 1
-        pattern_image.append(train_image[j])    
+        pattern_image.append(train_image[j])            
     train_image_labels = []
-    
+
     #construct ground truth
     for i in range(0,train_labels.shape[0]):
         train_image_labels.append(pattern_image[train_labels[i]])
